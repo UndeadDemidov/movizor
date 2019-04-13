@@ -249,6 +249,15 @@ func (pr PositionRequest) values() url.Values {
 	return url.Values{"id": {strconv.FormatInt(pr.RequestID, 10)}}
 }
 
+// GeoPoints содержит слайс точек геокодирования.
+type GeoPoints []GeoPoint
+
+// GeoPoint указывает на точку геокодирования.
+type GeoPoint struct {
+	Coordinates
+	Description string `json:"title"`
+}
+
 // OperatorInfo содержит информацию о сотовом операторе.
 type OperatorInfo struct {
 	Operator Operator `json:"operator"`         // Внутренний идентификатор оператора

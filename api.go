@@ -392,6 +392,22 @@ func (api *API) GetObjectsPositions() (ObjectPositions, error) {
 	return op, nil
 }
 
+// GeoCode выполняет геокодинг указанной строки. Метод возвращает набор подходящий точек
+// с их точными найденными адресами.
+func (api *API) GeoCode(addr string) (GeoPoints, error) {
+	v := url.Values{}
+	v.Add("query", addr)
+	resp, err := api.MakeRequest("distance_search", v)
+
+	var gp GeoPoints
+	err = json.Unmarshal(resp.Data, &gp)
+	if err != nil {
+		return GeoPoints{}, err
+	}
+
+	return gp, nil
+}
+
 // GetOperatorInfo возвращает информацию по оператору объекта трекинга (номеру телефона)
 func (api *API) GetOperatorInfo(o Object) (OperatorInfo, error) {
 	v, err := o.values()

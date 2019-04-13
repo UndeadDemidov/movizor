@@ -2,6 +2,7 @@ package movizor
 
 import (
 	"net/url"
+	"reflect"
 	"testing"
 	"time"
 )
@@ -426,65 +427,86 @@ func TestSchedulingOptions_addValuesTo(t *testing.T) {
 //		})
 //	}
 //}
-//
-//func TestRequestPositionsOptions_addValuesTo(t *testing.T) {
-//	type fields struct {
-//		RequestLimit uint64
-//		Offset       uint64
-//		TimeFrom     time.Time
-//		TimeTo       time.Time
-//	}
-//	type args struct {
-//		v *url.Values
-//	}
-//	tests := []struct {
-//		name    string
-//		fields  fields
-//		args    args
-//		wantErr bool
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			rpo := &RequestPositionsOptions{
-//				RequestLimit: tt.fields.RequestLimit,
-//				Offset:       tt.fields.Offset,
-//				TimeFrom:     tt.fields.TimeFrom,
-//				TimeTo:       tt.fields.TimeTo,
-//			}
-//			if err := rpo.addValuesTo(tt.args.v); (err != nil) != tt.wantErr {
-//				t.Errorf("RequestPositionsOptions.addValuesTo() error = %v, wantErr %v", err, tt.wantErr)
-//			}
-//		})
-//	}
-//}
-//
-//func TestObjectEventsOptions_values(t *testing.T) {
-//	type fields struct {
-//		RequestLimit uint64
-//		AfterEventID uint64
-//	}
-//	tests := []struct {
-//		name   string
-//		fields fields
-//		want   url.Values
-//	}{
-//		// TODO: Add test cases.
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			eo := ObjectEventsOptions{
-//				RequestLimit: tt.fields.RequestLimit,
-//				AfterEventID: tt.fields.AfterEventID,
-//			}
-//			if got := eo.values(); !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("ObjectEventsOptions.values() = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
+
+func TestRequestPositionsOptions_addValuesTo(t *testing.T) {
+	type fields struct {
+		RequestLimit uint64
+		Offset       uint64
+		TimeFrom     time.Time
+		TimeTo       time.Time
+	}
+	type args struct {
+		v *url.Values
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "test nice",
+			fields: fields{
+				10, 10, time.Now(), time.Now(),
+			},
+			args: args{
+				v: &url.Values{},
+			},
+			wantErr: false,
+		},
+		{
+			name: "test not nice",
+			fields: fields{
+				10, 10, time.Now(), time.Now(),
+			},
+			args:    args{nil},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			rpo := &RequestPositionsOptions{
+				RequestLimit: tt.fields.RequestLimit,
+				Offset:       tt.fields.Offset,
+				TimeFrom:     tt.fields.TimeFrom,
+				TimeTo:       tt.fields.TimeTo,
+			}
+			if err := rpo.addValuesTo(tt.args.v); (err != nil) != tt.wantErr {
+				t.Errorf("RequestPositionsOptions.addValuesTo() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestObjectEventsOptions_values(t *testing.T) {
+	type fields struct {
+		RequestLimit uint64
+		AfterEventID uint64
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		want   url.Values
+	}{
+		{
+			name:   "",
+			fields: fields{},
+			want:   url.Values{},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			eo := ObjectEventsOptions{
+				RequestLimit: tt.fields.RequestLimit,
+				AfterEventID: tt.fields.AfterEventID,
+			}
+			if got := eo.values(); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ObjectEventsOptions.values() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 //func TestNewSubscribeEventOptions(t *testing.T) {
 //	type args struct {
 //		o Object
