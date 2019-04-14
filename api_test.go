@@ -6,6 +6,7 @@
 package movizor
 
 import (
+	"encoding/json"
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
@@ -618,3 +619,80 @@ func TestAPI_EditObjectWithActivate(t *testing.T) {
 		})
 	}
 }
+
+func TestAPI_GetObjects(t *testing.T) {
+	tests := []struct {
+		name         string
+		filename     string
+		filenameWant string
+		wantErr      bool
+	}{
+		{
+			name:         "object_list_good",
+			filename:     "object_list_resp1.json",
+			filenameWant: "object_list.json",
+			wantErr:      false,
+		},
+		{
+			name:         "object_list_bad",
+			filename:     "error_response.json",
+			filenameWant: "object_list.json",
+			wantErr:      true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			dWant, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filenameWant))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+			want := ObjectsWithStatus{}
+			if err := json.Unmarshal(dWant, &want); err != nil {
+				t.Errorf("Balance.UnmarshalJSON() error = %v", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/object_list", responder)
+
+			got, err := api.GetObjects()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.GetObjects() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
+				(tt.wantErr && !reflect.DeepEqual(got, ObjectsWithStatus{})) {
+				t.Errorf("API.GetObjects() = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
+//
+//func TestAPI_GetObjectsPositions(t *testing.T) {
+//	tests := []struct {
+//		name    string
+//		want    ObjectPositions
+//		wantErr bool
+//	}{
+//		{
+//
+//		},
+//	}
+//	for _, tt := range tests {
+//		t.Run(tt.name, func(t *testing.T) {
+//			got, err := api.GetObjectsPositions()
+//			if (err != nil) != tt.wantErr {
+//				t.Errorf("API.GetObjectsPositions() error = %v, wantErr %v", err, tt.wantErr)
+//				return
+//			}
+//			if !reflect.DeepEqual(got, tt.want) {
+//				t.Errorf("API.GetObjectsPositions() = %v, want %v", got, tt.want)
+//			}
+//		})
+//	}
+//}
