@@ -133,7 +133,7 @@ func TestAPI_GetBalance(t *testing.T) {
 	}
 }
 
-func TestAPI_AddObject(t *testing.T) {
+func TestAPI_AddEditObject(t *testing.T) {
 	type args struct {
 		o  Object
 		oo *ObjectOptions
@@ -146,7 +146,7 @@ func TestAPI_AddObject(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name: "object_add_good",
+			name: "object_add&edit_good",
 			args: args{
 				o: "+7(900)129-4567",
 				oo: &ObjectOptions{
@@ -185,7 +185,7 @@ func TestAPI_AddObject(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "object_add_bad_object",
+			name: "object_add&edit_bad_object",
 			args: args{
 				o: "+7(900)129-456",
 				oo: &ObjectOptions{
@@ -220,7 +220,7 @@ func TestAPI_AddObject(t *testing.T) {
 			wantErr:  true,
 		},
 		{
-			name: "object_add_bad_destination",
+			name: "object_add&edit_bad_destination",
 			args: args{
 				o: "+7(900)129-4567",
 				oo: &ObjectOptions{
@@ -255,7 +255,7 @@ func TestAPI_AddObject(t *testing.T) {
 			wantErr:  true,
 		},
 		{
-			name: "object_add_bad",
+			name: "object_add&edit_bad",
 			args: args{
 				o: "+7(900)129-4567",
 				oo: &ObjectOptions{
@@ -311,6 +311,17 @@ func TestAPI_AddObject(t *testing.T) {
 
 			if !reflect.DeepEqual(got.Result, tt.want.Result) {
 				t.Errorf("API.AddObject() = %v, want %v", got, tt.want)
+			}
+
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/object_edit", responder)
+			got, err = api.EditObject(tt.args.o, tt.args.oo)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.EditObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !reflect.DeepEqual(got.Result, tt.want.Result) {
+				t.Errorf("API.EditObject() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -487,6 +498,122 @@ func TestAPI_GetObjectInfo(t *testing.T) {
 			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
 				(tt.wantErr && !reflect.DeepEqual(got, ObjectInfo{})) {
 				t.Errorf("API.GetObjectInfo() = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
+func TestAPI_EditObjectWithActivate(t *testing.T) {
+	type args struct {
+		o        Object
+		oo       *ObjectOptions
+		activate bool
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     APIResponse
+		wantErr  bool
+	}{
+		{
+			name: "object_edit_good",
+			args: args{
+				o: "+7(900)129-4567",
+				oo: &ObjectOptions{
+					Title:          "gopher uses movizor",
+					Tags:           []string{"gopher", "movizor"},
+					DateOff:        time.Now(),
+					Tariff:         TariffEvery15,
+					PackageProlong: false,
+					Destinations: []DestinationOptions{
+						{
+							Text:         "Москва",
+							Lon:          37.622504,
+							Lat:          55.753215,
+							ExpectedTime: time.Now(),
+						},
+						{
+							Text:         "СПб",
+							Lon:          30.315868,
+							Lat:          59.939095,
+							ExpectedTime: time.Now(),
+						},
+					},
+					Metadata: map[string]string{
+						"gopher":  "here",
+						"movizor": "there",
+					},
+					CallToDriver: false,
+				},
+				activate: true,
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+		{
+			name: "object_edit_good_false",
+			args: args{
+				o: "+7(900)129-4567",
+				oo: &ObjectOptions{
+					Title:          "gopher uses movizor",
+					Tags:           []string{"gopher", "movizor"},
+					DateOff:        time.Now(),
+					Tariff:         TariffEvery15,
+					PackageProlong: false,
+					Destinations: []DestinationOptions{
+						{
+							Text:         "Москва",
+							Lon:          37.622504,
+							Lat:          55.753215,
+							ExpectedTime: time.Now(),
+						},
+						{
+							Text:         "СПб",
+							Lon:          30.315868,
+							Lat:          59.939095,
+							ExpectedTime: time.Now(),
+						},
+					},
+					Metadata: map[string]string{
+						"gopher":  "here",
+						"movizor": "there",
+					},
+					CallToDriver: false,
+				},
+				activate: false,
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/object_edit", responder)
+			got, err := api.EditObjectWithActivate(tt.args.o, tt.args.oo, tt.args.activate)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.EditObjectWithActivate() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !reflect.DeepEqual(got.Result, tt.want.Result) {
+				t.Errorf("API.EditObjectWithActivate() = %v, want %v", got, tt.want)
 			}
 		})
 	}
