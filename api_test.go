@@ -672,27 +672,61 @@ func TestAPI_GetObjects(t *testing.T) {
 	}
 }
 
-//
-//func TestAPI_GetObjectsPositions(t *testing.T) {
-//	tests := []struct {
-//		name    string
-//		want    ObjectPositions
-//		wantErr bool
-//	}{
-//		{
-//
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//			got, err := api.GetObjectsPositions()
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("API.GetObjectsPositions() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("API.GetObjectsPositions() = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
+func TestAPI_DeleteObject(t *testing.T) {
+	type args struct {
+		o Object
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     APIResponse
+		wantErr  bool
+	}{
+		{
+			name: "object_delete_good",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+		{
+			name: "object_delete_bad",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "error_response.json",
+			want: APIResponse{
+				Result:     "error",
+				ResultCode: "ACCESS_DENIED",
+				ErrorText:  "Auth rate limit exceeded",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/object_delete", responder)
+			got, err := api.DeleteObject(tt.args.o)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.DeleteObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got.Result, tt.want.Result) {
+				t.Errorf("API.DeleteObject() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
