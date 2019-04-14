@@ -6,11 +6,12 @@
 package movizor
 
 import (
-	"github.com/jarcoal/httpmock"
 	"io/ioutil"
 	"path/filepath"
 	"reflect"
 	"testing"
+
+	"github.com/jarcoal/httpmock"
 )
 
 func TestAPI_GeoCode(t *testing.T) {
@@ -33,7 +34,7 @@ func TestAPI_GeoCode(t *testing.T) {
 	}{
 		{
 			name:     "Москва, Вятская 27/13",
-			filename: "distance_search1.json",
+			filename: "distance_search_resp1.json",
 			args: args{
 				addr: "Москва, Вятская 27/13",
 			},
@@ -48,7 +49,7 @@ func TestAPI_GeoCode(t *testing.T) {
 		},
 		{
 			name:     "XXXXX",
-			filename: "distance_search2.json",
+			filename: "error_response.json",
 			args: args{
 				addr: "XXXXX",
 			},
@@ -72,6 +73,65 @@ func TestAPI_GeoCode(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("API.GeoCode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAPI_GetBalance(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	api, err := NewMovizorAPI("some", "test")
+	if err != nil {
+		t.Errorf("API.GeoCode() can't create instance of API: %s", err)
+	}
+
+	tests := []struct {
+		name         string
+		filename     string
+		filenameWant string
+		wantErr      bool
+	}{
+		{
+			name:         "balance_good",
+			filename:     "balance_resp1.json",
+			filenameWant: "balance.json",
+			wantErr:      false,
+		},
+		{
+			name:         "balance_bad",
+			filename:     "error_response.json",
+			filenameWant: "balance.json",
+			wantErr:      true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			dWant, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filenameWant))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+			want := Balance{}
+			if err := want.UnmarshalJSON(dWant); err != nil {
+				t.Errorf("Balance.UnmarshalJSON() error = %v", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/balance", responder)
+
+			got, err := api.GetBalance()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.GetBalance() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
+				(tt.wantErr && !reflect.DeepEqual(got, Balance{})) {
+				t.Errorf("API.GetBalance() = %v, want %v", got, want)
 			}
 		})
 	}
