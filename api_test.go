@@ -730,3 +730,121 @@ func TestAPI_DeleteObject(t *testing.T) {
 		})
 	}
 }
+
+func TestAPI_ReactivateObject(t *testing.T) {
+	type args struct {
+		o Object
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     APIResponse
+		wantErr  bool
+	}{
+		{
+			name: "object_reactivate_good",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+		{
+			name: "object_reactivate_bad",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "error_response.json",
+			want: APIResponse{
+				Result:     "error",
+				ResultCode: "ACCESS_DENIED",
+				ErrorText:  "Auth rate limit exceeded",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/object_reactivate", responder)
+			got, err := api.ReactivateObject(tt.args.o)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.ReactivateObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got.Result, tt.want.Result) {
+				t.Errorf("API.ReactivateObject() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAPI_CancelTariffChangeObject(t *testing.T) {
+	type args struct {
+		o Object
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     APIResponse
+		wantErr  bool
+	}{
+		{
+			name: "object_cancel_tariff_good",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+		{
+			name: "object_cancel_tariff_bad",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "error_response.json",
+			want: APIResponse{
+				Result:     "error",
+				ResultCode: "ACCESS_DENIED",
+				ErrorText:  "Auth rate limit exceeded",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/object_cancel_tariff", responder)
+			got, err := api.CancelTariffChangeObject(tt.args.o)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.CancelTariffChangeObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got.Result, tt.want.Result) {
+				t.Errorf("API.CancelTariffChangeObject() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
