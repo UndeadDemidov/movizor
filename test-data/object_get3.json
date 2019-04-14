@@ -1,54 +1,31 @@
 {
-  "phone": "79133005200",
+  "phone": "79630005272",
   "status": "ok",
   "confirmed": true,
-  "title": "truck: C000CB154 trip:55124-3, order:R100540000",
-  "tariff": "30",
-  "tariff_new": null,
-  "last_timestamp": "1550574854",
+  "title": "Объект 4",
+  "tariff": "manual",
+  "tariff_new": "15",
+  "last_timestamp": "1543525294",
   "at_request": false,
-  "current_lon": "82.872594",
-  "current_lat": "55.169521",
-  "place": "Новосибирский р-н, Новосибирская обл.",
-  "distance": "17",
-  "distance_forecast_time": "1",
-  "distance_forecast_status": "ok",
+  "current_lon": "36.426606",
+  "current_lat": "56.876590",
+  "place": "Москва",
+  "distance": 0,
+  "distance_forecast_time": null,
+  "distance_forecast_status": null,
   "on_parking": false,
   "destination": [
     {
-      "text": "ул. Лыскина, 1, Ворсино, Калужская обл., Россия, 249020",
-      "lat": "55.225800",
-      "lon": "36.644810",
-      "time": "14.02.2019 21:50",
+      "text": "Somewhere far beyond",
+      "lat": "56.898779",
+      "lon": "36.326984",
+      "time": "22.11.2018 22:00",
       "status": "finished"
-    },
-    {
-      "text": "Россия, Калужская область, Боровский район, деревня Денисово",
-      "lat": "55.218224",
-      "lon": "36.674870",
-      "time": "15.02.2019 00:20",
-      "status": "finished"
-    },
-    {
-      "text": "Восточное ш., 2, Новосибирская обл., Россия, 630517",
-      "lat": "55.121674",
-      "lon": "83.007919",
-      "time": "20.02.2019 12:00",
-      "status": "new"
     }
   ],
   "offline_time": 0,
   "pos_error": false,
-  "timestamp_off": "1550746800",
-  "timestamp_add": "1550148843",
-  "metadata": {
-    "Водитель": "Евгений",
-    "Время включения": "14.02.2019 12:50",
-    "Заказ клиента": "R100546918",
-    "ИНН Клиента": "7705000050",
-    "ИНН Перевозчика": "5433966266",
-    "Клиент": "ООО &quot;Нестле Россия&quot;",
-    "Перевозчик": "ООО &quot;АКУЛА&quot;",
-    "ТС": "C592CB154"
-  }
+  "timestamp_off": "0",
+  "timestamp_add": "1542896000",
+  "metadata": []
 }

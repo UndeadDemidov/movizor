@@ -15,14 +15,16 @@ import (
 	"github.com/jarcoal/httpmock"
 )
 
-func TestAPI_GeoCode(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-	api, err := NewMovizorAPI("some", "test")
-	if err != nil {
-		t.Errorf("API.GeoCode() can't create instance of API: %s", err)
-	}
+var (
+	api *API
+)
 
+func init() {
+	httpmock.Activate()
+	api, _ = NewMovizorAPI("some", "test")
+}
+
+func TestAPI_GeoCode(t *testing.T) {
 	type args struct {
 		addr string
 	}
@@ -80,13 +82,6 @@ func TestAPI_GeoCode(t *testing.T) {
 }
 
 func TestAPI_GetBalance(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-	api, err := NewMovizorAPI("some", "test")
-	if err != nil {
-		t.Errorf("API.GeoCode() can't create instance of API: %s", err)
-	}
-
 	tests := []struct {
 		name         string
 		filename     string
@@ -139,13 +134,6 @@ func TestAPI_GetBalance(t *testing.T) {
 }
 
 func TestAPI_AddObject(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-	api, err := NewMovizorAPI("some", "test")
-	if err != nil {
-		t.Errorf("API.GeoCode() can't create instance of API: %s", err)
-	}
-
 	type args struct {
 		o  Object
 		oo *ObjectOptions
@@ -329,13 +317,6 @@ func TestAPI_AddObject(t *testing.T) {
 }
 
 func TestAPI_AddObjectToSlave(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-	api, err := NewMovizorAPI("some", "test")
-	if err != nil {
-		t.Errorf("API.GeoCode() can't create instance of API: %s", err)
-	}
-
 	type args struct {
 		o       Object
 		oo      *ObjectOptions
@@ -446,6 +427,66 @@ func TestAPI_AddObjectToSlave(t *testing.T) {
 
 			if !reflect.DeepEqual(got.Result, tt.want.Result) {
 				t.Errorf("API.AddObject() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAPI_GetObjectInfo(t *testing.T) {
+	type args struct {
+		o Object
+	}
+	tests := []struct {
+		name         string
+		args         args
+		filename     string
+		filenameWant string
+		wantErr      bool
+	}{
+		{
+			name: "object_get_good1",
+			args: args{
+				o: "79001294567",
+			},
+			filename:     "object_get_resp1.json",
+			filenameWant: "object_get1.json",
+			wantErr:      false,
+		},
+		{
+			name: "object_get_bad",
+			args: args{
+				o: "79001294567",
+			},
+			filename:     "error_response.json",
+			filenameWant: "object_get1.json",
+			wantErr:      true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+			dWant, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filenameWant))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+			want := ObjectInfo{}
+			if err := want.UnmarshalJSON(dWant); err != nil {
+				t.Errorf("ObjectInfo.UnmarshalJSON() error = %v", err)
+			}
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/object_get", responder)
+
+			got, err := api.GetObjectInfo(tt.args.o)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.GetObjectInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
+				(tt.wantErr && !reflect.DeepEqual(got, ObjectInfo{})) {
+				t.Errorf("API.GetObjectInfo() = %v, want %v", got, want)
 			}
 		})
 	}
