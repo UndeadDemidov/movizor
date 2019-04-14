@@ -11,7 +11,7 @@ import (
 type APIResponse struct {
 	Result      string          `json:"result"`                  // "success" or "error" expected
 	ResultCode  string          `json:"code"`                    // "OK" expected
-	MessageType string          `json:"message"`                 // "Balance info", ...
+	Message     string          `json:"message"`                 // "Balance info", ...
 	Data        json.RawMessage `json:"data,omitempty"`          // optional Payload of response
 	ErrorCode   string          `json:"error_code,omitempty"`    // Код ошибка
 	ErrorText   string          `json:"error_text,omitempty"`    // Текст ошибки

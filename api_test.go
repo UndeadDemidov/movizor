@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/jarcoal/httpmock"
 )
@@ -33,7 +34,7 @@ func TestAPI_GeoCode(t *testing.T) {
 		wantErr  bool
 	}{
 		{
-			name:     "Москва, Вятская 27/13",
+			name:     "good_addr",
 			filename: "distance_search_resp1.json",
 			args: args{
 				addr: "Москва, Вятская 27/13",
@@ -48,7 +49,7 @@ func TestAPI_GeoCode(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:     "XXXXX",
+			name:     "bad_addr",
 			filename: "error_response.json",
 			args: args{
 				addr: "XXXXX",
@@ -132,6 +133,319 @@ func TestAPI_GetBalance(t *testing.T) {
 			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
 				(tt.wantErr && !reflect.DeepEqual(got, Balance{})) {
 				t.Errorf("API.GetBalance() = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
+func TestAPI_AddObject(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	api, err := NewMovizorAPI("some", "test")
+	if err != nil {
+		t.Errorf("API.GeoCode() can't create instance of API: %s", err)
+	}
+
+	type args struct {
+		o  Object
+		oo *ObjectOptions
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     APIResponse
+		wantErr  bool
+	}{
+		{
+			name: "object_add_good",
+			args: args{
+				o: "+7(900)129-4567",
+				oo: &ObjectOptions{
+					Title:          "gopher uses movizor",
+					Tags:           []string{"gopher", "movizor"},
+					DateOff:        time.Now(),
+					Tariff:         TariffEvery15,
+					PackageProlong: false,
+					Destinations: []DestinationOptions{
+						{
+							Text:         "Москва",
+							Lon:          37.622504,
+							Lat:          55.753215,
+							ExpectedTime: time.Now(),
+						},
+						{
+							Text:         "СПб",
+							Lon:          30.315868,
+							Lat:          59.939095,
+							ExpectedTime: time.Now(),
+						},
+					},
+					Metadata: map[string]string{
+						"gopher":  "here",
+						"movizor": "there",
+					},
+					CallToDriver: false,
+				},
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+		{
+			name: "object_add_bad_object",
+			args: args{
+				o: "+7(900)129-456",
+				oo: &ObjectOptions{
+					Title:          "gopher uses movizor",
+					Tags:           []string{"gopher", "movizor"},
+					DateOff:        time.Now(),
+					Tariff:         TariffEvery15,
+					PackageProlong: false,
+					Destinations: []DestinationOptions{
+						{
+							Text:         "Москва",
+							Lon:          37.622504,
+							Lat:          55.753215,
+							ExpectedTime: time.Now(),
+						},
+						{
+							Text:         "СПб",
+							Lon:          30.315868,
+							Lat:          59.939095,
+							ExpectedTime: time.Now(),
+						},
+					},
+					Metadata: map[string]string{
+						"gopher":  "here",
+						"movizor": "there",
+					},
+					CallToDriver: false,
+				},
+			},
+			filename: "success_response.json",
+			want:     APIResponse{},
+			wantErr:  true,
+		},
+		{
+			name: "object_add_bad_destination",
+			args: args{
+				o: "+7(900)129-4567",
+				oo: &ObjectOptions{
+					Title:          "gopher uses movizor",
+					Tags:           []string{"gopher", "movizor"},
+					DateOff:        time.Now(),
+					Tariff:         TariffEvery15,
+					PackageProlong: false,
+					Destinations: []DestinationOptions{
+						{
+							Text:         "",
+							Lon:          37.622504,
+							Lat:          55.753215,
+							ExpectedTime: time.Now(),
+						},
+						{
+							Text:         "СПб",
+							Lon:          30.315868,
+							Lat:          59.939095,
+							ExpectedTime: time.Now(),
+						},
+					},
+					Metadata: map[string]string{
+						"gopher":  "here",
+						"movizor": "there",
+					},
+					CallToDriver: false,
+				},
+			},
+			filename: "success_response.json",
+			want:     APIResponse{},
+			wantErr:  true,
+		},
+		{
+			name: "object_add_bad",
+			args: args{
+				o: "+7(900)129-4567",
+				oo: &ObjectOptions{
+					Title:          "gopher uses movizor",
+					Tags:           []string{"gopher", "movizor"},
+					DateOff:        time.Now(),
+					Tariff:         TariffEvery15,
+					PackageProlong: false,
+					Destinations: []DestinationOptions{
+						{
+							Text:         "Москва",
+							Lon:          37.622504,
+							Lat:          55.753215,
+							ExpectedTime: time.Now(),
+						},
+						{
+							Text:         "СПб",
+							Lon:          30.315868,
+							Lat:          59.939095,
+							ExpectedTime: time.Now(),
+						},
+					},
+					Metadata: map[string]string{
+						"gopher":  "here",
+						"movizor": "there",
+					},
+					CallToDriver: false,
+				},
+			},
+			filename: "error_response.json",
+			want: APIResponse{
+				Result:     "error",
+				ResultCode: "ACCESS_DENIED",
+				ErrorText:  "Auth rate limit exceeded",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/object_add", responder)
+			got, err := api.AddObject(tt.args.o, tt.args.oo)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.AddObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !reflect.DeepEqual(got.Result, tt.want.Result) {
+				t.Errorf("API.AddObject() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAPI_AddObjectToSlave(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	api, err := NewMovizorAPI("some", "test")
+	if err != nil {
+		t.Errorf("API.GeoCode() can't create instance of API: %s", err)
+	}
+
+	type args struct {
+		o       Object
+		oo      *ObjectOptions
+		slaveID uint64
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     APIResponse
+		wantErr  bool
+	}{
+		{
+			name: "object_add_good",
+			args: args{
+				o: "+7(900)129-4567",
+				oo: &ObjectOptions{
+					Title:          "gopher uses movizor",
+					Tags:           []string{"gopher", "movizor"},
+					DateOff:        time.Now(),
+					Tariff:         TariffEvery15,
+					PackageProlong: false,
+					Destinations: []DestinationOptions{
+						{
+							Text:         "Москва",
+							Lon:          37.622504,
+							Lat:          55.753215,
+							ExpectedTime: time.Now(),
+						},
+						{
+							Text:         "СПб",
+							Lon:          30.315868,
+							Lat:          59.939095,
+							ExpectedTime: time.Now(),
+						},
+					},
+					Metadata: map[string]string{
+						"gopher":  "here",
+						"movizor": "there",
+					},
+					CallToDriver: false,
+				},
+				slaveID: 11112222,
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+		{
+			name: "object_add_good_zero",
+			args: args{
+				o: "+7(900)129-4567",
+				oo: &ObjectOptions{
+					Title:          "gopher uses movizor",
+					Tags:           []string{"gopher", "movizor"},
+					DateOff:        time.Now(),
+					Tariff:         TariffEvery15,
+					PackageProlong: false,
+					Destinations: []DestinationOptions{
+						{
+							Text:         "Москва",
+							Lon:          37.622504,
+							Lat:          55.753215,
+							ExpectedTime: time.Now(),
+						},
+						{
+							Text:         "СПб",
+							Lon:          30.315868,
+							Lat:          59.939095,
+							ExpectedTime: time.Now(),
+						},
+					},
+					Metadata: map[string]string{
+						"gopher":  "here",
+						"movizor": "there",
+					},
+					CallToDriver: false,
+				},
+				slaveID: 0,
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/object_add", responder)
+			got, err := api.AddObjectToSlave(tt.args.o, tt.args.oo, tt.args.slaveID)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.AddObject() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !reflect.DeepEqual(got.Result, tt.want.Result) {
+				t.Errorf("API.AddObject() = %v, want %v", got, tt.want)
 			}
 		})
 	}
