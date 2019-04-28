@@ -756,7 +756,7 @@ func TestAPI_ReactivateObject(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "object_reactivate_bad",
+			name: "object_reactivate_bad1",
 			args: args{
 				o: "+7(900)129-4567",
 			},
@@ -767,6 +767,15 @@ func TestAPI_ReactivateObject(t *testing.T) {
 				ErrorText:  "Auth rate limit exceeded",
 			},
 			wantErr: true,
+		},
+		{
+			name: "object_reactivate_bad2",
+			args: args{
+				o: "+7(900)129-456",
+			},
+			filename: "error_response.json",
+			want:     APIResponse{},
+			wantErr:  true,
 		},
 	}
 	for _, tt := range tests {
@@ -815,7 +824,7 @@ func TestAPI_CancelTariffChangeObject(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "object_cancel_tariff_bad",
+			name: "object_cancel_tariff_bad1",
 			args: args{
 				o: "+7(900)129-4567",
 			},
@@ -826,6 +835,15 @@ func TestAPI_CancelTariffChangeObject(t *testing.T) {
 				ErrorText:  "Auth rate limit exceeded",
 			},
 			wantErr: true,
+		},
+		{
+			name: "object_cancel_tariff_bad2",
+			args: args{
+				o: "+7(900)129-456",
+			},
+			filename: "error_response.json",
+			want:     APIResponse{},
+			wantErr:  true,
 		},
 	}
 	for _, tt := range tests {
@@ -844,6 +862,82 @@ func TestAPI_CancelTariffChangeObject(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got.Result, tt.want.Result) {
 				t.Errorf("API.CancelTariffChangeObject() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAPI_GetObjectLastPosition(t *testing.T) {
+	type args struct {
+		o Object
+	}
+
+	var i Int = 790
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     Position
+		wantErr  bool
+	}{
+		{
+			name: "object_pos_last_good",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "pos_last_resp1.json",
+			want: Position{
+				Coordinates: Coordinates{
+					Lat: 55.798355,
+					Lon: 37.579491,
+				},
+				Timestamp:        Time(time.Unix(1548165275, 0)),
+				TimestampRequest: Time(time.Unix(1548165275, 0)),
+				Deviation:        &i,
+				CoordinatesAttributes: CoordinatesAttributes{
+					Distance:  nil,
+					ETA:       nil,
+					ETAStatus: nil,
+					Place:     "Москва",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "object_pos_last_bad1",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "error_response.json",
+			want:     Position{},
+			wantErr:  true,
+		},
+		{
+			name: "object_pos_last_bad2",
+			args: args{
+				o: "+7(900)129-456",
+			},
+			filename: "error_response.json",
+			want:     Position{},
+			wantErr:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/pos_last", responder)
+			got, err := api.GetObjectLastPosition(tt.args.o)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.GetObjectLastPosition() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("API.GetObjectLastPosition() = %v, want %v", got, tt.want)
 			}
 		})
 	}

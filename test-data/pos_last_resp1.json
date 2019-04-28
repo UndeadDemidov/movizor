@@ -1,0 +1,16 @@
+{
+  "code": "OK",
+  "message": "",
+  "result": "success",
+  "data": {
+    "lon": "37.579491",
+    "lat": "55.798355",
+    "timestamp": 1548165275,
+    "timestamp_request": 1548165275,
+    "radius": 790,
+    "distance": null,
+    "distance_forecast_time": null,
+    "distance_forecast_status": null,
+    "place": "Москва"
+  }
+}
