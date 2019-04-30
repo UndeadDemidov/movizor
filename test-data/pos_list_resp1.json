@@ -1,0 +1,194 @@
+{
+  "code": "OK",
+  "message": "",
+  "result": "success",
+  "data": [
+    {
+      "lon": "37.579491",
+      "lat": "55.798355",
+      "timestamp": 1548165275,
+      "timestamp_request": 1548165275,
+      "radius": "790",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579491",
+      "lat": "55.798355",
+      "timestamp": 1548164300,
+      "timestamp_request": 1548164301,
+      "radius": "790",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579491",
+      "lat": "55.798355",
+      "timestamp": 1548163356,
+      "timestamp_request": 1548163356,
+      "radius": "790",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579491",
+      "lat": "55.798355",
+      "timestamp": 1548162387,
+      "timestamp_request": 1548162387,
+      "radius": "790",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579491",
+      "lat": "55.798355",
+      "timestamp": 1548161416,
+      "timestamp_request": 1548161416,
+      "radius": "790",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579491",
+      "lat": "55.798355",
+      "timestamp": 1548160473,
+      "timestamp_request": 1548160474,
+      "radius": "790",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.580210",
+      "lat": "55.799015",
+      "timestamp": 1548159505,
+      "timestamp_request": 1548159506,
+      "radius": "732",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.580210",
+      "lat": "55.799015",
+      "timestamp": 1548158534,
+      "timestamp_request": 1548158534,
+      "radius": "732",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.580210",
+      "lat": "55.799015",
+      "timestamp": 1548157591,
+      "timestamp_request": 1548157591,
+      "radius": "732",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579665",
+      "lat": "55.799859",
+      "timestamp": 1548156633,
+      "timestamp_request": 1548156634,
+      "radius": "905",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579665",
+      "lat": "55.799859",
+      "timestamp": 1548155662,
+      "timestamp_request": 1548155662,
+      "radius": "905",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579665",
+      "lat": "55.799859",
+      "timestamp": 1548154719,
+      "timestamp_request": 1548154719,
+      "radius": "905",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579665",
+      "lat": "55.799859",
+      "timestamp": 1548153748,
+      "timestamp_request": 1548153749,
+      "radius": "905",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579665",
+      "lat": "55.799859",
+      "timestamp": 1548152780,
+      "timestamp_request": 1548152781,
+      "radius": "905",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579665",
+      "lat": "55.799859",
+      "timestamp": 1548151836,
+      "timestamp_request": 1548151836,
+      "radius": "905",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579665",
+      "lat": "55.799859",
+      "timestamp": 1548150866,
+      "timestamp_request": 1548150867,
+      "radius": "905",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    },
+    {
+      "lon": "37.579665",
+      "lat": "55.799859",
+      "timestamp": 1548149893,
+      "timestamp_request": 1548149894,
+      "radius": "905",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null,
+      "place": "Москва"
+    }
+  ]
+}
