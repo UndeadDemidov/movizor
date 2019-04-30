@@ -1032,3 +1032,66 @@ func TestAPI_GetObjectPositions(t *testing.T) {
 		})
 	}
 }
+
+func TestAPI_RequestPosition(t *testing.T) {
+	type args struct {
+		o Object
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     PositionRequest
+		wantErr  bool
+	}{
+		{
+			name: "pos_request_good",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "pos_request_resp1.json",
+			want: PositionRequest{
+				RequestID: 22022757,
+			},
+			wantErr: false,
+		},
+		{
+			name: "pos_request_bad1",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename: "error_response.json",
+			want:     PositionRequest{},
+			wantErr:  true,
+		},
+		{
+			name: "pos_request_bad2",
+			args: args{
+				o: "+7(900)129-456",
+			},
+			filename: "pos_request_resp1.json",
+			want:     PositionRequest{},
+			wantErr:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/pos_request", responder)
+
+			got, err := api.RequestPosition(tt.args.o)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.RequestPosition() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("API.RequestPosition() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
