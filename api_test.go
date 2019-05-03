@@ -25,63 +25,6 @@ func init() {
 	api, _ = NewMovizorAPI("some", "test")
 }
 
-func TestAPI_GeoCode(t *testing.T) {
-	type args struct {
-		addr string
-	}
-	tests := []struct {
-		name     string
-		filename string
-		args     args
-		want     GeoPoints
-		wantErr  bool
-	}{
-		{
-			name:     "good_addr",
-			filename: "distance_search_resp1.json",
-			args: args{
-				addr: "Москва, Вятская 27/13",
-			},
-			want: GeoPoints{
-				{Coordinates: Coordinates{
-					Lat: 55.8070325,
-					Lon: 37.5795807,
-				},
-					Description: "Вятская улица, Савёловский, Савёловский район, Северный административный округ, Москва, ЦФО, 127015, Россия"},
-			},
-			wantErr: false,
-		},
-		{
-			name:     "bad_addr",
-			filename: "error_response.json",
-			args: args{
-				addr: "XXXXX",
-			},
-			want:    GeoPoints{},
-			wantErr: true,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
-			if err != nil {
-				t.Errorf("err: %s", err)
-			}
-
-			responder := httpmock.NewBytesResponder(200, d)
-			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/distance_search", responder)
-			got, err := api.GeoCode(tt.args.addr)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("API.GeoCode() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("API.GeoCode() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func TestAPI_GetBalance(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -1209,6 +1152,134 @@ func TestAPI_GetObjectsPositions(t *testing.T) {
 			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
 				(tt.wantErr && !reflect.DeepEqual(got, ObjectPositions{})) {
 				t.Errorf("API.GetObjectsPositions() = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
+func TestAPI_GeoCode(t *testing.T) {
+	type args struct {
+		addr string
+	}
+	tests := []struct {
+		name     string
+		filename string
+		args     args
+		want     GeoPoints
+		wantErr  bool
+	}{
+		{
+			name:     "good_addr",
+			filename: "distance_search_resp1.json",
+			args: args{
+				addr: "Москва, Вятская 27/13",
+			},
+			want: GeoPoints{
+				{Coordinates: Coordinates{
+					Lat: 55.8070325,
+					Lon: 37.5795807,
+				},
+					Description: "Вятская улица, Савёловский, Савёловский район, Северный административный округ, Москва, ЦФО, 127015, Россия"},
+			},
+			wantErr: false,
+		},
+		{
+			name:     "bad_addr",
+			filename: "error_response.json",
+			args: args{
+				addr: "XXXXX",
+			},
+			want:    GeoPoints{},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/distance_search", responder)
+			got, err := api.GeoCode(tt.args.addr)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.GeoCode() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("API.GeoCode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAPI_GetOperatorInfo(t *testing.T) {
+	type args struct {
+		o Object
+	}
+	tests := []struct {
+		name         string
+		args         args
+		filename     string
+		filenameWant string
+		wantErr      bool
+	}{
+		{
+			name: "get_operator_good",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename:     "get_operator_resp1.json",
+			filenameWant: "get_operator.json",
+			wantErr:      false,
+		},
+		{
+			name: "get_operator_bad1",
+			args: args{
+				o: "+7(900)129-4567",
+			},
+			filename:     "error_response.json",
+			filenameWant: "get_operator.json",
+			wantErr:      true,
+		},
+		{
+			name: "get_operator_bad2",
+			args: args{
+				o: "+7(900)129-456",
+			},
+			filename:     "get_operator_resp1.json",
+			filenameWant: "get_operator.json",
+			wantErr:      true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			dWant, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filenameWant))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+			want := OperatorInfo{}
+			if err := json.Unmarshal(dWant, &want); err != nil {
+				t.Errorf("Positions.UnmarshalJSON() error = %v", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/get_operator", responder)
+
+			got, err := api.GetOperatorInfo(tt.args.o)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.GetOperatorInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
+				(tt.wantErr && !reflect.DeepEqual(got, OperatorInfo{})) {
+				t.Errorf("API.GetOperatorInfo() = %v, want %v", got, want)
 			}
 		})
 	}

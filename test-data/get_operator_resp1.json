@@ -1,0 +1,10 @@
+{
+  "code": "OK",
+  "message": "Operator info",
+  "result": "success",
+  "data": {
+    "operator": "mts",
+    "title": "МТС",
+    "region": "г. Санкт-Петербург и Ленинградская область"
+  }
+}
