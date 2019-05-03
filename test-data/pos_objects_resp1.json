@@ -1,0 +1,29 @@
+{
+  "code": "OK",
+  "message": "Current positions",
+  "result": "success",
+  "data": [
+    {
+      "phone": "79630005272",
+      "lon": "37.674790",
+      "lat": "55.892011",
+      "timestamp": 1543075200,
+      "radius": 250,
+      "place": "Москва",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null
+    },
+    {
+      "phone": "79630005273",
+      "lon": "37.675790",
+      "lat": "55.893011",
+      "timestamp": 1543075200,
+      "radius": 250,
+      "place": "Москва",
+      "distance": null,
+      "distance_forecast_time": null,
+      "distance_forecast_status": null
+    }
+  ]
+}

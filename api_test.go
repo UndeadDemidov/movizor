@@ -1161,3 +1161,55 @@ func TestAPI_GetRequestedPosition(t *testing.T) {
 		})
 	}
 }
+
+func TestAPI_GetObjectsPositions(t *testing.T) {
+	tests := []struct {
+		name         string
+		filename     string
+		filenameWant string
+		wantErr      bool
+	}{
+		{
+			name:         "pos_objects_good",
+			filename:     "pos_objects_resp1.json",
+			filenameWant: "pos_objects.json",
+			wantErr:      false,
+		},
+		{
+			name:         "pos_objects_bad",
+			filename:     "error_response.json",
+			filenameWant: "pos_objects.json",
+			wantErr:      true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			dWant, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filenameWant))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+			want := ObjectPositions{}
+			if err := json.Unmarshal(dWant, &want); err != nil {
+				t.Errorf("Positions.UnmarshalJSON() error = %v", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/pos_objects", responder)
+
+			got, err := api.GetObjectsPositions()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.GetObjectsPositions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
+				(tt.wantErr && !reflect.DeepEqual(got, ObjectPositions{})) {
+				t.Errorf("API.GetObjectsPositions() = %v, want %v", got, want)
+			}
+		})
+	}
+}
