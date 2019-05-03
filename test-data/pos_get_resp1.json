@@ -1,0 +1,16 @@
+{
+  "code": "OK",
+  "message": "",
+  "result": "success",
+  "data": {
+    "lon": "42.799377",
+    "lat": "54.064921",
+    "timestamp": 1556635811,
+    "timestamp_request": 1556635814,
+    "radius": "4300",
+    "distance": "470",
+    "distance_forecast_time": "10",
+    "distance_forecast_status": "late",
+    "place": "Зубово-Полянский р-н, Мордовия"
+  }
+}
