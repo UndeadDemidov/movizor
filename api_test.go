@@ -1027,7 +1027,7 @@ func TestAPI_GetObjectPositions(t *testing.T) {
 			}
 			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
 				(tt.wantErr && !reflect.DeepEqual(got, Positions{})) {
-				t.Errorf("API.GetObjects() = %v, want %v", got, want)
+				t.Errorf("API.GetObjectPositions() = %v, want %v", got, want)
 			}
 		})
 	}
@@ -1091,6 +1091,72 @@ func TestAPI_RequestPosition(t *testing.T) {
 			}
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("API.RequestPosition() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestAPI_GetRequestedPosition(t *testing.T) {
+	type args struct {
+		pr PositionRequest
+	}
+	tests := []struct {
+		name         string
+		args         args
+		filename     string
+		filenameWant string
+		wantErr      bool
+	}{
+		{
+			name: "pos_get_good",
+			args: args{
+				pr: PositionRequest{
+					RequestID: 22022757,
+				},
+			},
+			filename:     "pos_get_resp1.json",
+			filenameWant: "pos_get1.json",
+			wantErr:      false,
+		},
+		{
+			name: "pos_get_bad1",
+			args: args{
+				pr: PositionRequest{
+					RequestID: 22022757,
+				},
+			},
+			filename:     "error_response.json",
+			filenameWant: "pos_get1.json",
+			wantErr:      true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			dWant, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filenameWant))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+			want := Position{}
+			if err := json.Unmarshal(dWant, &want); err != nil {
+				t.Errorf("Positions.UnmarshalJSON() error = %v", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/pos_get", responder)
+
+			got, err := api.GetRequestedPosition(tt.args.pr)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.GetRequestedPosition() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
+				(tt.wantErr && !reflect.DeepEqual(got, Position{})) {
+				t.Errorf("API.GetRequestedPosition() = %v, want %v", got, want)
 			}
 		})
 	}
