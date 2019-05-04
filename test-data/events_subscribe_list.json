@@ -6,7 +6,7 @@
     "timestamp": "1548084632",
     "type": "reject",
     "phone": "",
-    "email": "ndemidov@oboz.com",
+    "email": "ndemidov@some.some",
     "telegram": 0
   },
   {
@@ -16,20 +16,20 @@
     "timestamp": "1548084643",
     "type": "confirm",
     "phone": "",
-    "email": "ndemidov@oboz.com",
+    "email": "ndemidov@some.some",
     "telegram": 0
   },
   {
     "id": "5027",
     "phones_all": 0,
     "phones": [
-      "79261708877",
-      "79262629386"
+      "79001294567",
+      "79001294568"
     ],
     "timestamp": "1548084953",
     "type": "onparking",
     "phone": "",
-    "email": "ndemidov@oboz.com",
+    "email": "ndemidov@some.some",
     "telegram": 0
   }
 ]
