@@ -137,30 +137,58 @@ func TestAPI_DeleteEventsSubscription(t *testing.T) {
 	}
 }
 
-//func TestAPI_GetEventSubscriptions(t *testing.T) {
-//	tests := []struct {
-//		name    string
-//		want    SubscribedEvents
-//		wantErr bool
-//	}{
-//		{ // TODO: Add test cases.
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//
-//			got, err := api.GetEventSubscriptions()
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("API.GetEventSubscriptions() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("API.GetEventSubscriptions() = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
+func TestAPI_GetEventSubscriptions(t *testing.T) {
+	tests := []struct {
+		name         string
+		filename     string
+		filenameWant string
+		wantErr      bool
+	}{
+		{
+			name:         "events_subscribe_list_good",
+			filename:     "events_subscribe_list_resp1.json",
+			filenameWant: "events_subscribe_list.json",
+			wantErr:      false,
+		},
+		{
+			name:         "events_subscribe_list_bad",
+			filename:     "error_response.json",
+			filenameWant: "events_subscribe_list.json",
+			wantErr:      true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			dWant, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filenameWant))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+			want := SubscribedEvents{}
+			if err := json.Unmarshal(dWant, &want); err != nil {
+				t.Errorf("Positions.UnmarshalJSON() error = %v", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/events_subscribe_list", responder)
+
+			got, err := api.GetEventSubscriptions()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.GetEventSubscriptions() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if (!tt.wantErr && !reflect.DeepEqual(got, want)) ||
+				(tt.wantErr && !reflect.DeepEqual(got, SubscribedEvents{})) {
+				t.Errorf("API.GetEventSubscriptions() = %v, want %v", got, want)
+			}
+		})
+	}
+}
+
 //func TestAPI_SubscribeEvent(t *testing.T) {
 //	type args struct {
 //		o SubscribeEventOptions
