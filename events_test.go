@@ -33,6 +33,18 @@ func TestAPI_GetEvents(t *testing.T) {
 			wantErr:      false,
 		},
 		{
+			name: "events_bad_json",
+			args: args{
+				o: ObjectEventsOptions{
+					RequestLimit: 0,
+					AfterEventID: 0,
+				},
+			},
+			filename:     "bad.json",
+			filenameWant: "events.json",
+			wantErr:      true,
+		},
+		{
 			name: "events_bad1",
 			args: args{
 				o: ObjectEventsOptions{
@@ -102,7 +114,16 @@ func TestAPI_DeleteEventsSubscription(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "events_subscribe_delete_bad",
+			name: "events_subscribe_delete_bad_json",
+			args: args{
+				id: 123,
+			},
+			filename: "bad.json",
+			want:     APIResponse{},
+			wantErr:  true,
+		},
+		{
+			name: "events_subscribe_delete_bad1",
 			args: args{
 				id: 123,
 			},
@@ -151,7 +172,13 @@ func TestAPI_GetEventSubscriptions(t *testing.T) {
 			wantErr:      false,
 		},
 		{
-			name:         "events_subscribe_list_bad",
+			name:         "events_subscribe_list_bad_json",
+			filename:     "bad.json",
+			filenameWant: "events_subscribe_list.json",
+			wantErr:      true,
+		},
+		{
+			name:         "events_subscribe_list_bad1",
 			filename:     "error_response.json",
 			filenameWant: "events_subscribe_list.json",
 			wantErr:      true,
@@ -265,6 +292,22 @@ func TestAPI_SubscribeEvent(t *testing.T) {
 				},
 			},
 			filename: "success_response.json",
+			want:     APIResponse{},
+			wantErr:  true,
+		},
+		{
+			name: "events_subscribe_add_bad_json",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: true,
+					Objects:    nil,
+					Event:      NoConfirmationEvent,
+					notifyTo:   "emailNotification",
+					smsPhone:   "",
+					email:      "n.demidov@some.some",
+				},
+			},
+			filename: "bad.json",
 			want:     APIResponse{},
 			wantErr:  true,
 		},
