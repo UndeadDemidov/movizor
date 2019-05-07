@@ -189,34 +189,107 @@ func TestAPI_GetEventSubscriptions(t *testing.T) {
 	}
 }
 
-//func TestAPI_SubscribeEvent(t *testing.T) {
-//	type args struct {
-//		o SubscribeEventOptions
-//	}
-//	tests := []struct {
-//		name    string
-//		args    args
-//		want    APIResponse
-//		wantErr bool
-//	}{
-//		{ // TODO: Add test cases.
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//
-//			got, err := api.SubscribeEvent(tt.args.o)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("API.SubscribeEvent() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("API.SubscribeEvent() = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
+func TestAPI_SubscribeEvent(t *testing.T) {
+	type args struct {
+		o SubscribeEventOptions
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     APIResponse
+		wantErr  bool
+	}{
+		{
+			name: "events_subscribe_add_good",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: true,
+					Objects:    nil,
+					Event:      NoConfirmationEvent,
+					notifyTo:   emailNotification,
+					smsPhone:   "",
+					email:      "n.demidov@some.some",
+				},
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+		{
+			name: "events_subscribe_add_bad_no_phones",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: false,
+					Objects:    nil,
+					Event:      NoConfirmationEvent,
+					notifyTo:   emailNotification,
+					smsPhone:   "",
+					email:      "n.demidov@some.some",
+				},
+			},
+			filename: "success_response.json",
+			want:     APIResponse{},
+			wantErr:  true,
+		},
+		{
+			name: "events_subscribe_add_bad_no_event",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: true,
+					Objects:    nil,
+					Event:      "",
+					notifyTo:   emailNotification,
+					smsPhone:   "",
+					email:      "n.demidov@some.some",
+				},
+			},
+			filename: "success_response.json",
+			want:     APIResponse{},
+			wantErr:  true,
+		},
+		{
+			name: "events_subscribe_add_bad_no_notification_type",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: true,
+					Objects:    nil,
+					Event:      NoConfirmationEvent,
+					notifyTo:   "",
+					smsPhone:   "",
+					email:      "n.demidov@some.some",
+				},
+			},
+			filename: "success_response.json",
+			want:     APIResponse{},
+			wantErr:  true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/events_subscribe_add", responder)
+			got, err := api.SubscribeEvent(tt.args.o)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.SubscribeEvent() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("API.SubscribeEvent() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 //func TestAPI_ClearAllEventSubscriptions(t *testing.T) {
 //	tests := []struct {
 //		name    string
