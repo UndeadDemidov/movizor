@@ -77,36 +77,66 @@ func TestAPI_GetEvents(t *testing.T) {
 	}
 }
 
-//
-//func TestAPI_DeleteEventsSubscription(t *testing.T) {
-//	type args struct {
-//		id int64
-//	}
-//	tests := []struct {
-//		name string
-//
-//		args    args
-//		want    APIResponse
-//		wantErr bool
-//	}{
-//		{ // TODO: Add test cases.
-//		},
-//	}
-//	for _, tt := range tests {
-//		t.Run(tt.name, func(t *testing.T) {
-//
-//			got, err := api.DeleteEventsSubscription(tt.args.id)
-//			if (err != nil) != tt.wantErr {
-//				t.Errorf("API.DeleteEventsSubscription() error = %v, wantErr %v", err, tt.wantErr)
-//				return
-//			}
-//			if !reflect.DeepEqual(got, tt.want) {
-//				t.Errorf("API.DeleteEventsSubscription() = %v, want %v", got, tt.want)
-//			}
-//		})
-//	}
-//}
-//
+func TestAPI_DeleteEventsSubscription(t *testing.T) {
+	type args struct {
+		id int64
+	}
+	tests := []struct {
+		name     string
+		args     args
+		filename string
+		want     APIResponse
+		wantErr  bool
+	}{
+		{
+			name: "events_subscribe_delete_good",
+			args: args{
+				id: 123,
+			},
+			filename: "success_response.json",
+			want: APIResponse{
+				Result:     "success",
+				ResultCode: "OK",
+				Message:    "Some message",
+			},
+			wantErr: false,
+		},
+		{
+			name: "events_subscribe_delete_bad",
+			args: args{
+				id: 123,
+			},
+			filename: "error_response.json",
+			want: APIResponse{
+				Result:     "error",
+				ResultCode: "ACCESS_DENIED",
+				ErrorText:  "Auth rate limit exceeded",
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			d, err := ioutil.ReadFile(filepath.Join(dataPath, tt.filename))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			responder := httpmock.NewBytesResponder(200, d)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/events_subscribe_delete", responder)
+
+			got, err := api.DeleteEventsSubscription(tt.args.id)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("API.DeleteEventsSubscription() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got.Result, tt.want.Result) {
+				t.Errorf("API.DeleteEventsSubscription() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 //func TestAPI_GetEventSubscriptions(t *testing.T) {
 //	tests := []struct {
 //		name    string
