@@ -70,7 +70,7 @@ func TestAPI_GetEvents(t *testing.T) {
 			}
 			want := ObjectEvents{}
 			if err := json.Unmarshal(dWant, &want); err != nil {
-				t.Errorf("Positions.UnmarshalJSON() error = %v", err)
+				t.Errorf("ObjectEvents.UnmarshalJSON() error = %v", err)
 			}
 
 			responder := httpmock.NewBytesResponder(200, d)
@@ -197,7 +197,7 @@ func TestAPI_GetEventSubscriptions(t *testing.T) {
 			}
 			want := SubscribedEvents{}
 			if err := json.Unmarshal(dWant, &want); err != nil {
-				t.Errorf("Positions.UnmarshalJSON() error = %v", err)
+				t.Errorf("SubscribedEvents.UnmarshalJSON() error = %v", err)
 			}
 
 			responder := httpmock.NewBytesResponder(200, d)
