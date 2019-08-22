@@ -237,6 +237,25 @@ func (api *API) GetObjects() (ObjectsWithStatus, error) {
 	return o, nil
 }
 
+// GetFilteredObjects возвращает список объектов отфильтрованных переданным параметром-функцией
+func (api *API) GetFilteredObjects(filter func(ObjectStatus) bool) (ObjectsWithStatus, error) {
+	ows, err := api.GetObjects()
+	if err != nil {
+		return ObjectsWithStatus{}, nil
+	}
+
+	result := ows[:0]
+	for _, os := range ows {
+		if !filter(os) {
+			result = append(result, os)
+		}
+	}
+	for i := len(result); i < len(ows); i++ {
+		ows[i] = ObjectStatus{}
+	}
+	return result, nil
+}
+
 // DeleteObject отключает и удаляет абонента из системы мониторинга.
 func (api *API) DeleteObject(o Object) (APIResponse, error) {
 	v, err := o.values()
