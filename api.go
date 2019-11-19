@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"time"
 )
 
 // API - это клиент к API Мовизора. Сервиса определения гео-координат на основе GSM сервиса.
@@ -23,9 +24,7 @@ type API struct {
 	Token    string
 	Client   *http.Client
 	IsDebug  bool
-
-	//Buffer          int
-	//shutdownChannel chan interface{}
+	Retries  uint
 }
 
 // NewMovizorAPIWithEndpoint создает экземпляр Movizor API.
@@ -38,6 +37,7 @@ func NewMovizorAPIWithEndpoint(endp string, prj string, token string) (*API, err
 		Token:    token,
 		Client:   &http.Client{},
 		IsDebug:  false,
+		Retries:  1,
 	}
 	return api, nil
 }
@@ -51,25 +51,35 @@ func NewMovizorAPI(prj string, token string) (*API, error) {
 // Все методы API вызывают MakeRequest.
 func (api *API) MakeRequest(action string, params url.Values) (APIResponse, error) {
 	// MakeRequest itself
-	endpAction := fmt.Sprintf(fmt.Sprint(api.Endpoint, APIMovizorEndpointSuffix), api.Project, action)
-	if params == nil {
-		params = url.Values{}
-	}
-	params.Add("key", api.Token)
-	uri, _ := url.Parse(endpAction)
-
-	uri.RawQuery = params.Encode()
-	endpAction = uri.String()
+	endpAction := api.prepareRequest(action, params)
 
 	req, err := http.NewRequest("GET", endpAction, nil)
 	if err != nil {
 		return APIResponse{}, err
 	}
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	resp, err := api.Client.Do(req)
+	var resp *http.Response
+
+	// retry
+	max := int(api.Retries)
+	for i := 0; i < max; i++ {
+		resp, err = api.Client.Do(req)
+		if err == nil {
+			break
+		}
+		if resp != nil {
+			resp.Body.Close()
+		}
+		if api.IsDebug {
+			log.Printf("ERROR: request: %s\nerror: %s", req.URL, err)
+		}
+
+		time.Sleep(5 * time.Second)
+	}
 	if err != nil {
 		return APIResponse{}, err
 	}
+
 	defer resp.Body.Close()
 
 	// Response handling
@@ -93,6 +103,18 @@ func (api *API) MakeRequest(action string, params url.Values) (APIResponse, erro
 	}
 
 	return apiResp, err
+}
+
+func (api *API) prepareRequest(action string, params url.Values) string {
+	endpAction := fmt.Sprintf(fmt.Sprint(api.Endpoint, APIMovizorEndpointSuffix), api.Project, action)
+	if params == nil {
+		params = url.Values{}
+	}
+	params.Add("key", api.Token)
+	uri, _ := url.Parse(endpAction)
+	uri.RawQuery = params.Encode()
+	endpAction = uri.String()
+	return endpAction
 }
 
 func (api *API) decodeAPIResponse(responseBody io.Reader, resp *APIResponse) (_ []byte, err error) {
@@ -417,6 +439,9 @@ func (api *API) GeoCode(addr string) (GeoPoints, error) {
 	v := url.Values{}
 	v.Add("query", addr)
 	resp, err := api.MakeRequest("distance_search", v)
+	if err != nil {
+		return GeoPoints{}, err
+	}
 
 	var gp GeoPoints
 	err = json.Unmarshal(resp.Data, &gp)
