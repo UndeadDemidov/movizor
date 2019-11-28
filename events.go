@@ -65,6 +65,37 @@ func (api *API) SubscribeEvent(o SubscribeEventOptions) (APIResponse, error) {
 	return resp, nil
 }
 
+// AddSubscription добавляет подписку на событие по телефону в существующую подписку подписчика,
+// если таковой будет найден. Если такой подписчик не будет найден, то создастся новая подписка.
+func (api *API) AddEventSubscription(o SubscribeEventOptions) error {
+	events, err := api.GetEventSubscriptions()
+	if err != nil {
+		return err
+	}
+
+	opt := o
+	for _, e := range events {
+		if opt.IsSubscriberEqualTo(e) {
+			if e.IsAllObjectsSubscribed {
+				return nil
+			}
+
+			opt, err = e.MakeOptions()
+			if err != nil {
+				return err
+			}
+			opt.Objects = append(opt.Objects, o.Objects...)
+			break
+		}
+	}
+	_, err = api.SubscribeEvent(opt)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // ClearAllEventSubscriptions удаляет все подписки в аккаунте.
 func (api *API) ClearAllEventSubscriptions() error {
 	events, err := api.GetEventSubscriptions()

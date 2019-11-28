@@ -333,6 +333,150 @@ func TestAPI_SubscribeEvent(t *testing.T) {
 	}
 }
 
+func TestAPI_AddEventSubscription(t *testing.T) {
+	type args struct {
+		o SubscribeEventOptions
+	}
+	tests := []struct {
+		name                 string
+		subscriptionFileName string
+		respondFileName      string
+		args                 args
+		wantErr              bool
+	}{
+		{
+			name:                 "add_good",
+			subscriptionFileName: "events_subscribe_list_resp1.json",
+			respondFileName:      "success_response.json",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: false,
+					Objects: []Object{
+						"79001294569",
+					},
+					Event:    OnParkingEvent,
+					notifyTo: emailNotification,
+					smsPhone: "",
+					email:    "ndemidov@some.some",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:                 "add_good",
+			subscriptionFileName: "events_subscribe_list_resp1.json",
+			respondFileName:      "success_response.json",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: false,
+					Objects: []Object{
+						"79001294569",
+					},
+					Event:    ConfirmEvent,
+					notifyTo: emailNotification,
+					smsPhone: "",
+					email:    "ndemidov@some.some",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:                 "add_good",
+			subscriptionFileName: "events_subscribe_list_resp1.json",
+			respondFileName:      "success_response.json",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: false,
+					Objects: []Object{
+						"79001294569",
+					},
+					Event:    ConfirmEvent,
+					notifyTo: smsNotification,
+					smsPhone: "79123456789",
+					email:    "",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:                 "add_good",
+			subscriptionFileName: "events_subscribe_list_resp1.json",
+			respondFileName:      "success_response.json",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: false,
+					Objects: []Object{
+						"79001294569",
+					},
+					Event:    RejectEvent,
+					notifyTo: emailNotification,
+					smsPhone: "",
+					email:    "ndemidov@some.some",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name:                 "add_bad",
+			subscriptionFileName: "error_response.json",
+			respondFileName:      "success_response.json",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: false,
+					Objects: []Object{
+						"79001294569",
+					},
+					Event:    RejectEvent,
+					notifyTo: emailNotification,
+					smsPhone: "",
+					email:    "ndemidov@some.some",
+				},
+			},
+			wantErr: true,
+		},
+		{
+			name:                 "add_bad",
+			subscriptionFileName: "events_subscribe_list_resp1.json",
+			respondFileName:      "error_response.json",
+			args: args{
+				o: SubscribeEventOptions{
+					AllObjects: false,
+					Objects: []Object{
+						"79001294569",
+					},
+					Event:    RejectEvent,
+					notifyTo: emailNotification,
+					smsPhone: "",
+					email:    "ndemidov@some.some",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			subscriptionData, err := ioutil.ReadFile(filepath.Join(dataPath, tt.subscriptionFileName))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+			respondData, err := ioutil.ReadFile(filepath.Join(dataPath, tt.respondFileName))
+			if err != nil {
+				t.Errorf("err: %s", err)
+			}
+
+			subscriptionResp := httpmock.NewBytesResponder(200, subscriptionData)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/events_subscribe_list", subscriptionResp)
+
+			subscribeResp := httpmock.NewBytesResponder(200, respondData)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/events_subscribe_add", subscribeResp)
+
+			if err := api.AddEventSubscription(tt.args.o); (err != nil) != tt.wantErr {
+				t.Errorf("API.AddEventSubscription() error = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 //func TestAPI_ClearAllEventSubscriptions(t *testing.T) {
 //	tests := []struct {
 //		name    string

@@ -527,7 +527,163 @@ func TestObjectEventsOptions_values(t *testing.T) {
 //		})
 //	}
 //}
-//
+
+func TestSubscribeEventOptions_IsSubscriberEqualTo(t *testing.T) {
+	type fields struct {
+		AllObjects bool
+		Objects    []Object
+		Event      EventType
+		notifyTo   notificationType
+		smsPhone   Object
+		email      string
+	}
+	type args struct {
+		event SubscribedEvent
+	}
+	tests := []struct {
+		name   string
+		fields fields
+		args   args
+		want   bool
+	}{
+		{
+			name: "test nice",
+			fields: fields{
+				AllObjects: false,
+				Objects:    []Object{"79001234567"},
+				Event:      ConfirmEvent,
+				notifyTo:   smsNotification,
+				smsPhone:   "79001234560",
+				email:      "",
+			},
+			args: args{
+				event: SubscribedEvent{
+					SubscriptionID:         0,
+					IsAllObjectsSubscribed: false,
+					ObjectsSubscribed:      []Object{"79001234566", "79001234565", "79001234568", "79001234569"},
+					Timestamp:              Time(time.Now()),
+					Event:                  ConfirmEvent,
+					Phone:                  "79001234560",
+					EMail:                  "",
+					IsTelegram:             false,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "test nice - telegram",
+			fields: fields{
+				AllObjects: false,
+				Objects:    []Object{"79001234567"},
+				Event:      ConfirmEvent,
+				notifyTo:   telegramNotification,
+				smsPhone:   "79001234560",
+				email:      "",
+			},
+			args: args{
+				event: SubscribedEvent{
+					SubscriptionID:         0,
+					IsAllObjectsSubscribed: false,
+					ObjectsSubscribed:      []Object{"79001234566", "79001234565", "79001234568", "79001234569"},
+					Timestamp:              Time(time.Now()),
+					Event:                  ConfirmEvent,
+					Phone:                  "",
+					EMail:                  "n.demidov@some.some",
+					IsTelegram:             true,
+				},
+			},
+			want: true,
+		},
+		{
+			name: "test not nice - another phone",
+			fields: fields{
+				AllObjects: false,
+				Objects:    []Object{"79001234567"},
+				Event:      ConfirmEvent,
+				notifyTo:   smsNotification,
+				smsPhone:   "79001234561",
+				email:      "",
+			},
+			args: args{
+				event: SubscribedEvent{
+					SubscriptionID:         0,
+					IsAllObjectsSubscribed: false,
+					ObjectsSubscribed:      []Object{"79001234566", "79001234565", "79001234568", "79001234569"},
+					Timestamp:              Time(time.Now()),
+					Event:                  ConfirmEvent,
+					Phone:                  "79001234560",
+					EMail:                  "",
+					IsTelegram:             false,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "test not nice - another notification type",
+			fields: fields{
+				AllObjects: false,
+				Objects:    []Object{"79001234567"},
+				Event:      ConfirmEvent,
+				notifyTo:   smsNotification,
+				smsPhone:   "79001234560",
+				email:      "",
+			},
+			args: args{
+				event: SubscribedEvent{
+					SubscriptionID:         0,
+					IsAllObjectsSubscribed: false,
+					ObjectsSubscribed:      []Object{"79001234566", "79001234565", "79001234568", "79001234569"},
+					Timestamp:              Time(time.Now()),
+					Event:                  ConfirmEvent,
+					Phone:                  "",
+					EMail:                  "n.demidov@some.some",
+					IsTelegram:             false,
+				},
+			},
+			want: false,
+		},
+		{
+			name: "test not nice - another event",
+			fields: fields{
+				AllObjects: false,
+				Objects:    []Object{"79001234567"},
+				Event:      ConfirmEvent,
+				notifyTo:   smsNotification,
+				smsPhone:   "79001234560",
+				email:      "",
+			},
+			args: args{
+				event: SubscribedEvent{
+					SubscriptionID:         0,
+					IsAllObjectsSubscribed: false,
+					ObjectsSubscribed:      []Object{"79001234566", "79001234565", "79001234568", "79001234569"},
+					Timestamp:              Time(time.Now()),
+					Event:                  AutoOffEvent,
+					Phone:                  "79001234560",
+					EMail:                  "",
+					IsTelegram:             false,
+				},
+			},
+			want: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			se := &SubscribeEventOptions{
+				AllObjects: tt.fields.AllObjects,
+				Objects:    tt.fields.Objects,
+				Event:      tt.fields.Event,
+				notifyTo:   tt.fields.notifyTo,
+				smsPhone:   tt.fields.smsPhone,
+				email:      tt.fields.email,
+			}
+			if got := se.IsSubscriberEqualTo(tt.args.event); got != tt.want {
+				t.Errorf("SubscribeEventOptions.IsSubscriberEqualTo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 //func TestSubscribeEventOptions_SetSMSNotification(t *testing.T) {
 //	type fields struct {
 //		AllObjects bool

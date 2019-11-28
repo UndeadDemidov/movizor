@@ -218,6 +218,13 @@ func NewSubscribeEventOptions(o Object, e EventType) SubscribeEventOptions {
 	}
 }
 
+// IsSubscriberEqualTo проверяет, что у опций подписки на конкретное событие один и тот же подписчик
+func (se *SubscribeEventOptions) IsSubscriberEqualTo(event SubscribedEvent) bool {
+	return se.Event == event.Event && ((se.notifyTo == telegramNotification && event.IsTelegram) ||
+		(se.notifyTo == emailNotification && se.email == event.EMail) ||
+		(se.notifyTo == smsNotification && se.smsPhone == event.Phone))
+}
+
 // SetSMSNotification устанавливает нотификацию на указанный телефон по СМС. Работает только та нотификация,
 // которая была установлена последней в данной подписке. Это особенности API Movizor.
 func (se *SubscribeEventOptions) SetSMSNotification(phone Object) error {
