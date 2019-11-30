@@ -85,6 +85,7 @@ func (api *API) AddEventSubscription(o SubscribeEventOptions) error {
 				return err
 			}
 			opt.Objects = append(opt.Objects, o.Objects...)
+			opt.Objects = deDupObjectSlice(opt.Objects)
 			break
 		}
 	}
@@ -194,7 +195,6 @@ func (api *API) removeObjectSubscriptions(e SubscribedEvent, f shouldRemoveSubsc
 				}
 
 				seo.Objects = append(seo.Objects[:i], seo.Objects[i+1:]...)
-				seo.Objects = deDupObjectSlice(seo.Objects)
 				_, err = api.SubscribeEvent(seo)
 				if err != nil {
 					return err
