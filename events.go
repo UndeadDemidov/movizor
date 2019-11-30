@@ -194,6 +194,7 @@ func (api *API) removeObjectSubscriptions(e SubscribedEvent, f shouldRemoveSubsc
 				}
 
 				seo.Objects = append(seo.Objects[:i], seo.Objects[i+1:]...)
+				seo.Objects = deDupObjectSlice(seo.Objects)
 				_, err = api.SubscribeEvent(seo)
 				if err != nil {
 					return err
@@ -202,4 +203,16 @@ func (api *API) removeObjectSubscriptions(e SubscribedEvent, f shouldRemoveSubsc
 		}
 	}
 	return nil
+}
+
+func deDupObjectSlice(src []Object) []Object {
+	m := make(map[Object]bool)
+	var result []Object
+	for _, v := range src {
+		if _, f := m[v]; !f {
+			m[v] = true
+			result = append(result, v)
+		}
+	}
+	return result
 }
