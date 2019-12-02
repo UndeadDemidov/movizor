@@ -12,10 +12,14 @@ const (
 type Operator string
 
 const (
-	OperatorMTS     Operator = "mts"     // МТС
-	OperatorMegafon Operator = "megafon" // Мегафон
-	OperatorBeeline Operator = "beeline" // Билайн
-	OperatorTele2   Operator = "tele2"   // Теле2
+	// МТС
+	OperatorMTS Operator = "mts"
+	// Мегафон
+	OperatorMegafon Operator = "megafon"
+	// Билайн
+	OperatorBeeline Operator = "beeline"
+	// Теле2
+	OperatorTele2 Operator = "tele2"
 )
 
 // Service представляет собой тип доп сервиса МоВизора.
