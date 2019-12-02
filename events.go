@@ -74,12 +74,14 @@ func (api *API) AddEventSubscription(o SubscribeEventOptions) error {
 	}
 
 	opt := o
+	id := int64(0)
 	for _, e := range events {
 		if opt.IsSubscriberEqualTo(e) {
 			if e.IsAllObjectsSubscribed {
 				return nil
 			}
 
+			id = e.SubscriptionID
 			opt, err = e.MakeOptions()
 			if err != nil {
 				return err
@@ -88,6 +90,10 @@ func (api *API) AddEventSubscription(o SubscribeEventOptions) error {
 			opt.Objects = deDupObjectSlice(opt.Objects)
 			break
 		}
+	}
+	_, err = api.DeleteEventsSubscription(id)
+	if err != nil {
+		return err
 	}
 	_, err = api.SubscribeEvent(opt)
 	if err != nil {

@@ -468,6 +468,7 @@ func TestAPI_AddEventSubscription(t *testing.T) {
 			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/events_subscribe_list", subscriptionResp)
 
 			subscribeResp := httpmock.NewBytesResponder(200, respondData)
+			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/events_subscribe_delete", subscribeResp)
 			httpmock.RegisterResponder("GET", "https://movizor.ru/api/some/events_subscribe_add", subscribeResp)
 
 			if err := api.AddEventSubscription(tt.args.o); (err != nil) != tt.wantErr {
